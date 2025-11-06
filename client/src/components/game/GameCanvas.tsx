@@ -22,10 +22,39 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   const animationFrameRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
 
+  // Store callbacks in refs to avoid re-initialization on every render
+  const callbacksRef = useRef({
+    onGameOver,
+    onLevelUp,
+    onFoodEaten,
+  });
+
+  // Update callbacks ref on every render
+  useEffect(() => {
+    callbacksRef.current = {
+      onGameOver,
+      onLevelUp,
+      onFoodEaten,
+    };
+  });
+
   const { settings, gameMode, updateCurrentStats, updateAllTimeStats } =
     useGameStore();
 
-  // Initialize game engine and renderer
+  // Store Zustand actions in refs
+  const storeActionsRef = useRef({
+    updateCurrentStats,
+    updateAllTimeStats,
+  });
+
+  useEffect(() => {
+    storeActionsRef.current = {
+      updateCurrentStats,
+      updateAllTimeStats,
+    };
+  });
+
+  // Initialize game engine and renderer - ONLY when gameMode or settings change
   useEffect(() => {
     if (!canvasRef.current) return;
 
@@ -53,27 +82,27 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     engine.init();
     engine.setState(GameState.PLAYING);
 
-    // Subscribe to game events
+    // Subscribe to game events - use refs to get latest callbacks
     const unsubscribeFoodEaten = engine.on('FOOD_EATEN', (event) => {
       if (event.type === 'FOOD_EATEN') {
         const stats = engine.getStats();
-        updateCurrentStats(stats);
-        onFoodEaten?.(event.data.points);
+        storeActionsRef.current.updateCurrentStats(stats);
+        callbacksRef.current.onFoodEaten?.(event.data.points);
       }
     });
 
     const unsubscribeLevelUp = engine.on('LEVEL_UP', (event) => {
       if (event.type === 'LEVEL_UP') {
         const stats = engine.getStats();
-        updateCurrentStats(stats);
-        onLevelUp?.(event.data.level);
+        storeActionsRef.current.updateCurrentStats(stats);
+        callbacksRef.current.onLevelUp?.(event.data.level);
       }
     });
 
     const unsubscribeGameOver = engine.on('GAME_OVER', (event) => {
       if (event.type === 'GAME_OVER') {
-        updateAllTimeStats(event.data.stats);
-        onGameOver?.(event.data.stats.score);
+        storeActionsRef.current.updateAllTimeStats(event.data.stats);
+        callbacksRef.current.onGameOver?.(event.data.stats.score);
       }
     });
 
@@ -114,7 +143,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       unsubscribeLevelUp();
       unsubscribeGameOver();
     };
-  }, [gameMode, settings, updateCurrentStats, updateAllTimeStats, onGameOver, onLevelUp, onFoodEaten]);
+  }, [gameMode, settings]);
 
   // Handle keyboard input
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
