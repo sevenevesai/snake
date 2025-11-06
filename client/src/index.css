@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900;
+    @apply text-white font-sans antialiased;
+    @apply min-h-screen overflow-hidden;
+  }
+
+  * {
+    @apply box-border;
+  }
+}
+
+@layer utilities {
+  .glow-green {
+    text-shadow: 0 0 10px rgba(0, 255, 0, 0.8),
+                 0 0 20px rgba(0, 255, 0, 0.6),
+                 0 0 30px rgba(0, 255, 0, 0.4);
+  }
+
+  .glow-neon {
+    box-shadow: 0 0 10px currentColor,
+                0 0 20px currentColor,
+                0 0 40px currentColor;
+  }
+
+  .glass-morphism {
+    @apply bg-white/10 backdrop-blur-md border border-white/20;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-900/50;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-purple-500 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-purple-400;
+}
+
+/* Game canvas optimizations */
+canvas {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
